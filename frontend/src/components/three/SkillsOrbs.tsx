@@ -1,7 +1,7 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { WebGLErrorBoundary } from './WebGLErrorBoundary';
+import { WebGLErrorBoundary, isWebGLAvailable } from './WebGLErrorBoundary';
 
 function GlowOrb({
   color,
@@ -64,15 +64,6 @@ function SkillsScene() {
   );
 }
 
-function isWebGLAvailable(): boolean {
-  try {
-    const canvas = document.createElement('canvas');
-    return !!(canvas.getContext('webgl') || canvas.getContext('webgl2'));
-  } catch {
-    return false;
-  }
-}
-
 function SkillsFallback() {
   return (
     <div className="absolute inset-0 -z-10 opacity-40 overflow-hidden">
@@ -97,7 +88,9 @@ function SkillsFallback() {
 }
 
 export function SkillsOrbs() {
-  if (!isWebGLAvailable()) {
+  const [webglFailed, setWebglFailed] = useState(false);
+
+  if (!isWebGLAvailable() || webglFailed) {
     return <SkillsFallback />;
   }
 
@@ -109,6 +102,7 @@ export function SkillsOrbs() {
           camera={{ position: [0, 0, 5], fov: 50 }}
           style={{ background: 'transparent' }}
           gl={{ alpha: true, antialias: false }}
+          onError={() => setWebglFailed(true)}
         >
           <SkillsScene />
         </Canvas>

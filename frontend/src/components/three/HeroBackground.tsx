@@ -1,7 +1,7 @@
-import { useRef, useMemo, useCallback } from 'react';
+import { useRef, useMemo, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { WebGLErrorBoundary } from './WebGLErrorBoundary';
+import { WebGLErrorBoundary, isWebGLAvailable } from './WebGLErrorBoundary';
 
 function FloatingShape({
   geometry,
@@ -163,15 +163,6 @@ function HeroScene() {
   );
 }
 
-function isWebGLAvailable(): boolean {
-  try {
-    const canvas = document.createElement('canvas');
-    return !!(canvas.getContext('webgl') || canvas.getContext('webgl2'));
-  } catch {
-    return false;
-  }
-}
-
 function HeroFallback() {
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -196,7 +187,9 @@ function HeroFallback() {
 }
 
 export function HeroBackground() {
-  if (!isWebGLAvailable()) {
+  const [webglFailed, setWebglFailed] = useState(false);
+
+  if (!isWebGLAvailable() || webglFailed) {
     return <HeroFallback />;
   }
 
@@ -211,6 +204,7 @@ export function HeroBackground() {
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
           }}
+          onError={() => setWebglFailed(true)}
         >
           <HeroScene />
         </Canvas>
