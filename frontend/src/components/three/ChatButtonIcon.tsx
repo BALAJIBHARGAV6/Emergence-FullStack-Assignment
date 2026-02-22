@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { isWebGLAvailable } from './WebGLErrorBoundary';
 
 function Crystal({ hovered }: { hovered: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -32,6 +33,10 @@ export function ChatButtonIcon({
 }: {
   hovered: boolean;
 }) {
+  if (!isWebGLAvailable()) {
+    return <ChatButtonIconFallback />;
+  }
+
   return (
     <Canvas
       dpr={Math.min(window.devicePixelRatio, 1.5)}
